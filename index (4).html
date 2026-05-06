@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KS3 CS — Scenario Learning Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─── DESIGN TOKENS ─────────────────────────────────────────────── */
+:root {
+  --bg:        #0d1117;
+  --surface:   #161b22;
+  --surface2:  #1e2530;
+  --border:    #30363d;
+  --border2:   #21262d;
+  --accent:    #58a6ff;
+  --accent2:   #1f6feb;
+  --green:     #3fb950;
+  --amber:     #d29922;
+  --red:       #f85149;
+  --purple:    #bc8cff;
+  --text:      #e6edf3;
+  --text2:     #8b949e;
+  --text3:     #484f58;
+  --mono:      'JetBrains Mono', monospace;
+  --sans:      'DM Sans', sans-serif;
+  --radius:    8px;
+  --radius-lg: 14px;
+  --shadow:    0 8px 32px rgba(0,0,0,0.4);
+  --glow:      0 0 20px rgba(88,166,255,0.15);
+}
+
+/* Superpower Mode */
+body.superpower {
+  --text: #1a1a1a;
+  --bg: #fdf6e3;
+  --surface: #fff8ea;
+  --surface2: #ffefc8;
+  --border: #ddd0aa;
+  --border2: #e8dfc0;
+  --text2: #5a4e30;
+  font-family: 'OpenDyslexic', 'Comic Sans MS', cursive !important;
+  letter-spacing: 0.08em;
+  line-height: 1.9 !important;
+  word-spacing: 0.2em;
+}
+body.superpower * { font-family: 'OpenDyslexic', 'Comic Sans MS', cursive !important; }
+
+/* Colour overlays */
+.overlay {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: multiply;
+  opacity: 0.35;
+  display: none;
+}
+.overlay.active { display: block; }
+
+/* ─── RESET & BASE ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Grid background pattern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(88,166,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(88,166,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── LAYOUT ─────────────────────────────────────────────────────── */
+#app {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+.view { display: none; }
+.view.active { display: block; }
+
+/* ─── TOP BAR ────────────────────────────────────────────────────── */
+#topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(13,17,23,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border2);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.topbar-logo .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+.topbar-right {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.topbar-user {
+  font-size: 0.8rem;
+  color: var(--text2);
+  font-family: var(--mono);
+}
+
+/* ─── ACCESSIBILITY BAR ──────────────────────────────────────────── */
+#access-bar {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border2);
+  padding: 6px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: var(--text2);
+}
+
+#access-bar span { margin-right: 4px; }
+
+.overlay-btn {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.1s;
+  flex-shrink: 0;
+}
+.overlay-btn:hover { transform: scale(1.15); border-color: var(--accent); }
+.overlay-btn.active { border: 2px solid var(--accent); }
+
+/* ─── BUTTONS ────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 20px;
+  border-radius: var(--radius);
+  border: none;
+  font-family: var(--sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--accent);
+  color: #0d1117;
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) {
+  background: #79c0ff;
+  box-shadow: 0 0 16px rgba(88,166,255,0.3);
+}
+
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  padding: 6px 12px;
+}
+.btn-ghost:hover { color: var(--text); background: var(--surface2); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--red);
+  border: 1px solid var(--red);
+}
+.btn-danger:hover { background: rgba(248,81,73,0.1); }
+
+.btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+.btn-lg { padding: 12px 28px; font-size: 1rem; }
+.btn-full { width: 100%; }
+
+/* ─── FORMS ──────────────────────────────────────────────────────── */
+.form-group {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: 16px;
+}
+
+label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--mono);
+}
+
+input, select, textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88,166,255,0.15);
+}
+input::placeholder, textarea::placeholder { color: var(--text3); }
+select option { background: var(--surface2); }
+
+textarea { resize: vertical; min-height: 80px; font-family: var(--mono); font-size: 0.85rem; }
+
+.form-error {
+  font-size: 0.78rem;
+  color: var(--red);
+  margin-top: 4px;
+  display: none;
+}
+.form-error.show { display: block; }
+
+/* ─── CARDS ──────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.card-sub {
+  font-size: 0.82rem;
+  color: var(--text2);
+}
+
+/* ─── BADGES ─────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+}
+.badge-blue   { background: rgba(88,166,255,0.15); color: var(--accent); }
+.badge-green  { background: rgba(63,185,80,0.15);  color: var(--green); }
+.badge-amber  { background: rgba(210,153,34,0.15); color: var(--amber); }
+.badge-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+.badge-red    { background: rgba(248,81,73,0.15);  color: var(--red); }
+
+/* ─── ALERTS ─────────────────────────────────────────────────────── */
+.alert {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+  display: none;
+}
+.alert.show { display: flex; align-items: flex-start; gap: 8px; }
+.alert-error  { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); color: #ffa198; }
+.alert-success { background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3); color: #7ee787; }
+.alert-info   { background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.3); color: #79c0ff; }
+
+/* ─── DIVIDER ────────────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--border2);
+  margin: 20px 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   VIEW: LANDING / LOGIN
+════════════════════════════════════════════════════════════════════ */
+#view-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.login-wrap {
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-hero {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.login-hero .logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  border-radius: 16px;
+  font-family: var(--mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0d1117;
+  margin-bottom: 20px;
+  box-shadow: 0 0 30px rgba(88,166,255,0.25);
+}
+
+.login-hero h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.login-hero p {
+  font-size: 0.875rem;
+  color: var(--text2);
+}
+
+.login-tabs {
+  display: flex;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border2);
+}
+
+.login-tab {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s;
+  border: none;
+  background: none;
+  font-family: var(--sans);
+}
+.login-tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.login-form-panel { display: none; }
+.login-form-panel.active { display: block; }
+
+.login-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.78rem;
+  color: var(--text3);
+}
+
+.teacher-link {
+  display: block;
+  text-align: center;
+  margin-top: 28px;
+  font-size: 0.8rem;
+  color: var(--text3);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.teacher-link:hover { color: var(--accent); }
+
+/* ════════════════════════════════════════════════════════════════════
+   VIEW: SCENARIO HUB
+════════════════════════════════════════════════════════════════════ */
+#view-hub {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.hub-header {
+  margin-bottom: 36px;
+}
+
+.hub-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.hub-header p {
+  color: var(--text2);
+  font-size: 0.9rem;
+}
+
+.hub-greeting {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.scenario-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.scenario-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.scenario-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--glow), var(--shadow);
+}
+.scenario-card:hover::before { opacity: 1; }
+
+.sc-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.sc-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.sc-context {
+  font-size: 0.83rem;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.sc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid var(--border2);
+}
+
+.sc-stats {
+  display: flex; gap: 16px;
+  font-size: 0.75rem;
+  color: var(--text3);
+  font-family: var(--mono);
+}
+
+.sc-stats span { display: flex; align-items: center; gap: 4px; }
+
+/* Progress bar */
+.progress-bar-wrap {
+  margin: 12px 0;
+}
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text2);
+  margin-bottom: 4px;
+  font-family: var(--mono);
+}
+.progress-bar {
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.progress-fill.complete { background: linear-gradient(90deg, #238636, var(--green)); }
+
+/* ════════════════════════════════════════════════════════════════════
+   VIEW: SCENARIO INTRO
+════════════════════════════════════════════════════════════════════ */
+#view-intro {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.intro-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text2);
+  cursor: pointer;
+  margin-bottom: 28px;
+  transition: color 0.15s;
+}
+.intro-back:hover { color: var(--accent); }
+
+.intro-header {
+  margin-bottom: 28px;
+}
+.intro-header h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.intro-context-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text2);
+  margin-bottom: 24px;
+}
+
+.intro-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.intro-stat {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+}
+.intro-stat .val {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+}
+.intro-stat .lbl {
+  font-size: 0.72rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.subject-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.subject-box p {
+  font-size: 0.875rem;
+  color: var(--text2);
+  margin-bottom: 12px;
+}
+
+/* Task list preview */
+.task-list-preview {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+
+.tlp-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--mono);
+}
+
+.tlp-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border2);
+  font-size: 0.85rem;
+  gap: 12px;
+  transition: background 0.1s;
+}
+.tlp-row:last-child { border-bottom: none; }
+.tlp-row:hover { background: var(--surface2); }
+
+.tlp-num {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text3);
+  width: 24px;
+  flex-shrink: 0;
+}
+.tlp-title { flex: 1; color: var(--text); }
+.tlp-week {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text3);
+}
+
+.diff-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.diff-dot.foundation { background: var(--green); }
+.diff-dot.core       { background: var(--amber); }
+.diff-dot.extension  { background: var(--purple); }
+
+.status-icon { font-size: 0.9rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+/* ════════════════════════════════════════════════════════════════════
+   VIEW: TASK
+════════════════════════════════════════════════════════════════════ */
+#view-task {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.task-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.task-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.task-pip {
+  width: 28px; height: 6px;
+  border-radius: 3px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.task-pip.done  { background: var(--green); border-color: var(--green); }
+.task-pip.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(88,166,255,0.4); }
+
+.task-counter {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text2);
+  white-space: nowrap;
+}
+
+.task-card-main {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.task-card-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border2);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.task-card-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.task-card-body {
+  padding: 24px;
+}
+
+.task-question {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--text);
+  white-space: pre-wrap;
+  margin-bottom: 20px;
+}
+
+/* Multiple choice */
+.mc-options { display: flex; flex-direction: column; gap: 10px; }
+
+.mc-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.88rem;
+}
+.mc-option:hover { border-color: var(--accent); background: rgba(88,166,255,0.05); }
+.mc-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); color: var(--accent); }
+
+.mc-option input[type="radio"],
+.mc-option input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+
+/* Code editor placeholder */
+.code-editor-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.code-editor-bar {
+  background: var(--surface2);
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border2);
+}
+
+.code-editor-bar span {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.code-lang-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+.code-lang-dot.python { background: #3572A5; }
+.code-lang-dot.html { background: #e34c26; }
+.code-lang-dot.css { background: #563d7c; }
+
+.code-textarea {
+  background: #0d1117;
+  border: none;
+  border-radius: 0;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: #e6edf3;
+  padding: 16px;
+  min-height: 260px;
+  resize: vertical;
+  tab-size: 4;
+  line-height: 1.6;
+}
+.code-textarea:focus {
+  box-shadow: none;
+  border: none;
+}
+
+.task-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.task-save-indicator {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.save-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text3);
+  transition: background 0.3s;
+}
+.save-dot.saving { background: var(--amber); animation: pulse 0.8s infinite; }
+.save-dot.saved  { background: var(--green); }
+
+/* ════════════════════════════════════════════════════════════════════
+   VIEW: REVIEW
+════════════════════════════════════════════════════════════════════ */
+#view-review {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.review-header {
+  margin-bottom: 28px;
+}
+.review-header h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.review-header p { color: var(--text2); font-size: 0.875rem; }
+
+.review-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+
+.review-item {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.review-num {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  background: rgba(88,166,255,0.1);
+  border-radius: 4px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.review-content { flex: 1; }
+.review-content h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+.review-content p {
+  font-size: 0.8rem;
+  color: var(--text2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 560px;
+}
+
+.review-edit {
+  font-size: 0.75rem;
+  color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.review-edit:hover { background: rgba(88,166,255,0.1); }
+
+.submit-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+}
+.submit-section p {
+  font-size: 0.875rem;
+  color: var(--text2);
+  margin-bottom: 16px;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   VIEW: GRADING / LOADING
+════════════════════════════════════════════════════════════════════ */
+#view-grading {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.grading-inner {
+  text-align: center;
+  max-width: 400px;
+}
+
+.grading-spinner {
+  width: 56px; height: 56px;
+  border: 3px solid var(--surface2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  margin: 0 auto 24px;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.grading-inner h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.grading-inner p { font-size: 0.875rem; color: var(--text2); }
+
+/* ════════════════════════════════════════════════════════════════════
+   VIEW: RESULTS
+════════════════════════════════════════════════════════════════════ */
+#view-results {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.results-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.score-ring-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.score-circle {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent) 0%, var(--surface2) 0%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 12px;
+}
+.score-circle::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+.score-number {
+  position: relative; z-index: 1;
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.results-feedback {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--green);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text2);
+  margin-bottom: 24px;
+}
+
+.results-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.rb-item {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.83rem;
+}
+.rb-item .rb-num { font-family: var(--mono); color: var(--text3); width: 28px; flex-shrink: 0; }
+.rb-item .rb-title { flex: 1; font-weight: 500; }
+.rb-item .rb-score { font-family: var(--mono); font-size: 0.78rem; color: var(--accent); flex-shrink: 0; }
+.rb-feedback { font-size: 0.78rem; color: var(--text2); margin-top: 4px; }
+
+/* ════════════════════════════════════════════════════════════════════
+   VIEW: TEACHER DASHBOARD
+════════════════════════════════════════════════════════════════════ */
+#view-teacher {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+#view-teacher-pin {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+.pin-box h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.pin-box p { font-size: 0.82rem; color: var(--text2); margin-bottom: 20px; }
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.dashboard-header h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.dashboard-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.dashboard-filters select { width: auto; }
+
+/* Data table */
+.data-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border2);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  min-width: 800px;
+}
+
+.data-table th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text2);
+  border-bottom: 1px solid var(--border2);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border2);
+  vertical-align: middle;
+}
+
+.data-table tbody tr { transition: background 0.1s; }
+.data-table tbody tr:hover { background: var(--surface2); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+
+.status-cell {
+  text-align: center;
+  font-size: 1rem;
+}
+
+.stuck-col { background: rgba(210,153,34,0.07) !important; }
+
+/* Expandable row */
+.expand-row { display: none; }
+.expand-row.open { display: table-row; }
+.expand-row td {
+  background: var(--surface2);
+  padding: 16px 20px;
+  font-size: 0.82rem;
+  color: var(--text2);
+}
+
+/* ─── LOADING STATE ──────────────────────────────────────────────── */
+#global-loading {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  flex-direction: column;
+  gap: 16px;
+}
+#global-loading.hidden { display: none; }
+
+.loading-logo {
+  font-family: var(--mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  animation: flicker 2s infinite;
+}
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+.loading-sub {
+  font-size: 0.8rem;
+  color: var(--text3);
+  font-family: var(--mono);
+}
+
+/* ─── MODAL ──────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow);
+}
+.modal h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+.modal p  { font-size: 0.875rem; color: var(--text2); margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .intro-stats { grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .intro-stat .val { font-size: 1rem; }
+  .task-progress { display: none; }
+  #view-teacher { padding: 24px 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── COLOUR OVERLAYS ──────────────────────────────────────────── -->
+<div class="overlay" id="overlay-el" style="background:#ffe0b2"></div>
+<div class="overlay" id="overlay-blue" style="background:#b3d9ff"></div>
+<div class="overlay" id="overlay-green" style="background:#c8f5c8"></div>
+<div class="overlay" id="overlay-pink" style="background:#ffd6e0"></div>
+<div class="overlay" id="overlay-yellow" style="background:#fff9b0"></div>
+<div class="overlay" id="overlay-grey" style="background:#d0d0d0"></div>
+
+<!-- ─── GLOBAL LOADING ───────────────────────────────────────────── -->
+<div id="global-loading">
+  <div class="loading-logo">KS3_CS</div>
+  <div class="loading-sub">initialising...</div>
+</div>
+
+<!-- ─── APP SHELL ────────────────────────────────────────────────── -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <nav id="topbar" style="display:none">
+    <div class="topbar-logo">
+      <div class="dot"></div>
+      KS3_CS / scenarios
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="topbar-username"></span>
+      <button class="btn btn-ghost btn-sm" id="btn-logout">logout</button>
+    </div>
+  </nav>
+
+  <!-- ACCESSIBILITY BAR -->
+  <div id="access-bar" style="display:none">
+    <span>Accessibility:</span>
+    <button class="btn btn-ghost btn-sm" id="btn-superpower" style="padding:3px 10px;font-size:0.72rem">⚡ Superpower Mode</button>
+    <span style="margin-left:8px">Overlay:</span>
+    <button class="overlay-btn" id="ov-none" title="No overlay" style="background:var(--surface2)" onclick="setOverlay('none')">✕</button>
+    <button class="overlay-btn" id="ov-el" title="Warm/cream" style="background:#ffe0b2" onclick="setOverlay('el')"></button>
+    <button class="overlay-btn" id="ov-blue" title="Blue" style="background:#b3d9ff" onclick="setOverlay('blue')"></button>
+    <button class="overlay-btn" id="ov-green" title="Green" style="background:#c8f5c8" onclick="setOverlay('green')"></button>
+    <button class="overlay-btn" id="ov-pink" title="Pink" style="background:#ffd6e0" onclick="setOverlay('pink')"></button>
+    <button class="overlay-btn" id="ov-yellow" title="Yellow" style="background:#fff9b0" onclick="setOverlay('yellow')"></button>
+    <button class="overlay-btn" id="ov-grey" title="Grey" style="background:#d0d0d0" onclick="setOverlay('grey')"></button>
+  </div>
+
+  <!-- ══ VIEW: LOGIN ══════════════════════════════════════════════ -->
+  <div id="view-login" class="view active">
+    <div class="login-wrap">
+      <div class="login-hero">
+        <div class="logo-mark">CS</div>
+        <h1>KS3 Scenario Platform</h1>
+        <p>Corby Business Academy &mdash; Computer Science</p>
+      </div>
+
+      <div class="login-tabs">
+        <button class="login-tab active" onclick="switchLoginTab('login')">Sign In</button>
+        <button class="login-tab" onclick="switchLoginTab('register')">Register</button>
+      </div>
+
+      <!-- SIGN IN PANEL -->
+      <div class="login-form-panel active" id="panel-login">
+        <div class="alert alert-error" id="login-error"></div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="login-username" placeholder="your username" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" id="btn-login" onclick="doLogin()">
+          Sign In →
+        </button>
+      </div>
+
+      <!-- REGISTER PANEL -->
+      <div class="login-form-panel" id="panel-register">
+        <div class="alert alert-error" id="reg-error"></div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="reg-username" placeholder="choose a username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="choose a password">
+        </div>
+        <div class="form-group">
+          <label>Year Group</label>
+          <select id="reg-year">
+            <option value="">— select —</option>
+            <option value="Y7">Year 7</option>
+            <option value="Y8">Year 8</option>
+            <option value="Y9">Year 9</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Class Code</label>
+          <input type="text" id="reg-classcode" placeholder="given by your teacher" style="text-transform:uppercase">
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" onclick="doRegister()">
+          Create Account →
+        </button>
+      </div>
+
+      <a class="teacher-link" onclick="showView('view-teacher-pin')">🔒 Teacher Dashboard</a>
+
+      <div class="login-footer">
+        Corby Business Academy &bull; KS3 Computer Science &bull; v1.0
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: SCENARIO HUB ═══════════════════════════════════════ -->
+  <div id="view-hub" class="view">
+    <div class="hub-header">
+      <div class="hub-greeting" id="hub-greeting">WELCOME BACK</div>
+      <h2>Choose Your Scenario</h2>
+      <p>Select a project to work on. Your progress is saved automatically.</p>
+    </div>
+    <div class="scenario-grid" id="scenario-grid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- ══ VIEW: SCENARIO INTRO ══════════════════════════════════════ -->
+  <div id="view-intro" class="view">
+    <div class="intro-back" onclick="showView('view-hub')">← Back to scenarios</div>
+    <div class="intro-header">
+      <div id="intro-badges" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <h2 id="intro-title">Scenario Title</h2>
+    </div>
+    <div class="intro-context-box" id="intro-context"></div>
+    <div class="intro-stats">
+      <div class="intro-stat"><span class="val" id="intro-tasks">10</span><span class="lbl">Tasks</span></div>
+      <div class="intro-stat"><span class="val" id="intro-sessions">6</span><span class="lbl">Sessions</span></div>
+      <div class="intro-stat"><span class="val" id="intro-mins">60</span><span class="lbl">Minutes est.</span></div>
+    </div>
+
+    <div id="subject-box-wrap" class="subject-box" style="display:none">
+      <p id="subject-prompt-text"></p>
+      <div class="form-group" style="margin-bottom:0">
+        <label id="subject-label">My topic:</label>
+        <input type="text" id="subject-input" placeholder="Type your topic here...">
+      </div>
+    </div>
+
+    <div class="task-list-preview">
+      <div class="tlp-header">Tasks in this scenario</div>
+      <div id="tlp-rows"><!-- populated by JS --></div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="showView('view-hub')">Cancel</button>
+      <button class="btn btn-primary btn-lg" id="btn-start-scenario" onclick="startScenario()">
+        Start / Resume →
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: TASK ════════════════════════════════════════════════ -->
+  <div id="view-task" class="view">
+    <div class="task-top">
+      <button class="btn btn-ghost btn-sm" onclick="showView('view-intro')">← Back</button>
+      <div class="task-progress" id="task-pips"><!-- pips --></div>
+      <div class="task-counter" id="task-counter">Task 1 of 10</div>
+    </div>
+
+    <div class="task-card-main">
+      <div class="task-card-header">
+        <div>
+          <h3 id="task-title">Task Title</h3>
+          <div style="display:flex;gap:8px;margin-top:6px" id="task-badges"></div>
+        </div>
+        <div id="task-marks-badge" class="badge badge-blue">0 marks</div>
+      </div>
+      <div class="task-card-body">
+        <div class="task-question" id="task-question"></div>
+        <div id="task-answer-area"><!-- dynamic --></div>
+      </div>
+    </div>
+
+    <div class="task-nav">
+      <button class="btn btn-secondary" id="btn-prev-task" onclick="prevTask()">← Previous</button>
+      <div class="task-save-indicator">
+        <div class="save-dot" id="save-dot"></div>
+        <span id="save-label">unsaved</span>
+      </div>
+      <button class="btn btn-primary" id="btn-next-task" onclick="saveAndNext()">Save & Next →</button>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: REVIEW ══════════════════════════════════════════════ -->
+  <div id="view-review" class="view">
+    <div class="review-header">
+      <h2>Review Your Answers</h2>
+      <p>Check everything before you submit. You can go back and edit any task.</p>
+    </div>
+    <div class="review-list" id="review-list"><!-- populated --></div>
+    <div class="submit-section">
+      <p>Once you submit, your work will be marked by AI and you will receive a score and written feedback. You cannot resubmit after this.</p>
+      <button class="btn btn-primary btn-lg" id="btn-submit" onclick="confirmSubmit()">
+        Submit for Grading ✓
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: GRADING ═════════════════════════════════════════════ -->
+  <div id="view-grading" class="view">
+    <div class="grading-inner">
+      <div class="grading-spinner"></div>
+      <h3>Marking your work...</h3>
+      <p>Your answers are being reviewed. This usually takes 10–20 seconds.</p>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: RESULTS ═════════════════════════════════════════════ -->
+  <div id="view-results" class="view">
+    <div class="results-header">
+      <div class="score-ring-wrap">
+        <div class="score-circle" id="score-circle">
+          <span class="score-number" id="score-number">0/0</span>
+        </div>
+      </div>
+      <div id="results-badges" style="display:flex;gap:8px;justify-content:center;margin-bottom:12px"></div>
+      <h2 id="results-title" style="font-size:1.3rem;letter-spacing:-0.02em;margin-bottom:8px"></h2>
+    </div>
+    <div class="results-feedback" id="results-feedback"></div>
+    <h3 style="font-size:0.85rem;font-family:var(--mono);color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px">Task Breakdown</h3>
+    <div class="results-breakdown" id="results-breakdown"></div>
+    <div style="text-align:center">
+      <button class="btn btn-secondary btn-lg" onclick="showView('view-hub')">← Back to Scenarios</button>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: TEACHER PIN ═════════════════════════════════════════ -->
+  <div id="view-teacher-pin" class="view">
+    <div style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
+      <div class="pin-box">
+        <h3>🔒 Teacher Dashboard</h3>
+        <p>Enter your PIN to access student results.</p>
+        <div class="alert alert-error" id="pin-error"></div>
+        <div class="form-group">
+          <label>PIN</label>
+          <input type="password" id="pin-input" placeholder="••••" maxlength="8"
+            onkeydown="if(event.key==='Enter') checkPin()">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="checkPin()">Enter Dashboard →</button>
+        <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="showView('view-login')">← Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: TEACHER DASHBOARD ═══════════════════════════════════ -->
+  <div id="view-teacher" class="view">
+    <div class="dashboard-header">
+      <div>
+        <h2>📊 Teacher Dashboard</h2>
+        <p style="font-size:0.82rem;color:var(--text2);margin-top:2px">Per-task status for all students</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick="loadDashboard()">⟳ Refresh</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV()">↓ Export CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="showView('view-login')">← Exit</button>
+      </div>
+    </div>
+
+    <div class="dashboard-filters">
+      <select id="filter-year" onchange="applyFilters()" style="width:140px">
+        <option value="">All Years</option>
+        <option value="Y7">Year 7</option>
+        <option value="Y8">Year 8</option>
+        <option value="Y9">Year 9</option>
+      </select>
+      <select id="filter-class" onchange="applyFilters()" style="width:160px">
+        <option value="">All Classes</option>
+      </select>
+      <select id="filter-scenario" onchange="applyFilters()" style="width:220px">
+        <option value="">All Scenarios</option>
+      </select>
+    </div>
+
+    <div class="data-table-wrap">
+      <table class="data-table" id="dashboard-table">
+        <thead id="dashboard-thead"></thead>
+        <tbody id="dashboard-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<!-- ─── CONFIRM MODAL ─────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal">
+    <h3>Submit for Grading?</h3>
+    <p>This will send all your answers to be marked. You cannot change them afterwards. Are you sure you're ready?</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Go Back</button>
+      <button class="btn btn-primary" onclick="doSubmit()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT — APPLICATION LOGIC
+══════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ─── CONFIG ─────────────────────────────────────────────────────── */
+const CONFIG = {
+  JSONBIN_API_KEY:  'REPLACE_WITH_YOUR_JSONBIN_API_KEY',
+  JSONBIN_BIN_ID:   'REPLACE_WITH_YOUR_BIN_ID',
+  CLAUDE_API_KEY:   'REPLACE_WITH_YOUR_CLAUDE_API_KEY',
+  TEACHER_PIN:      'REPLACE_WITH_YOUR_PIN',
+  CLASS_CODES:      ['CBA7A','CBA7B','CBA8A','CBA8B','CBA9A','CBA9B'], // edit as needed
+  SCENARIOS_FILE:   'scenarios.json',
+  CLAUDE_MODEL:     'claude-sonnet-4-20250514',
+};
+
+/* ─── STATE ──────────────────────────────────────────────────────── */
+let STATE = {
+  user:            null,
+  scenarios:       [],
+  currentScenario: null,
+  currentTaskIdx:  0,
+  allStudents:     [],
+  saveTimer:       null,
+  superpower:      false,
+  overlay:         'none',
+};
+
+/* ─── UTILS ──────────────────────────────────────────────────────── */
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random()*16|0;
+    return (c==='x' ? r : (r&0x3|0x8)).toString(16);
+  });
+}
+
+function showAlert(id, msg, type='error') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = `alert alert-${type} show`;
+  el.textContent = msg;
+}
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (el) { el.className = 'alert'; el.textContent = ''; }
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const v = document.getElementById(id);
+  if (v) { v.classList.add('active'); window.scrollTo(0,0); }
+
+  const loggedIn = !!STATE.user;
+  document.getElementById('topbar').style.display     = (loggedIn && id !== 'view-login' && id !== 'view-teacher-pin') ? 'flex' : 'none';
+  document.getElementById('access-bar').style.display = (loggedIn && id !== 'view-login' && id !== 'view-teacher-pin') ? 'flex' : 'none';
+}
+
+function closeModal() {
+  document.getElementById('modal-confirm').classList.remove('open');
+}
+
+/* ─── JSONBIN ────────────────────────────────────────────────────── */
+const BIN_URL = () => `https://api.jsonbin.io/v3/b/${CONFIG.JSONBIN_BIN_ID}`;
+const BIN_HEADERS = {
+  'Content-Type': 'application/json',
+  'X-Master-Key': CONFIG.JSONBIN_API_KEY,
+  'X-Bin-Versioning': 'false',
+};
+
+async function fetchStudents() {
+  const r = await fetch(BIN_URL(), { headers: BIN_HEADERS });
+  if (!r.ok) return [];
+  const d = await r.json();
+  return d.record.students || [];
+}
+
+async function saveStudents(students) {
+  await fetch(BIN_URL(), {
+    method: 'PUT',
+    headers: BIN_HEADERS,
+    body: JSON.stringify({ students }),
+  });
+}
+
+/* ─── SCENARIOS ──────────────────────────────────────────────────── */
+async function loadScenarios() {
+  try {
+    const r = await fetch(CONFIG.SCENARIOS_FILE);
+    const d = await r.json();
+    STATE.scenarios = d.scenarios || [];
+  } catch(e) {
+    STATE.scenarios = [];
+    console.warn('scenarios.json not found — using empty list');
+  }
+}
+
+/* ─── AUTH ───────────────────────────────────────────────────────── */
+async function doLogin() {
+  hideAlert('login-error');
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  if (!username || !password) {
+    showAlert('login-error', 'Please enter your username and password.'); return;
+  }
+
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+
+  try {
+    const hash = await sha256(password);
+    const students = await fetchStudents();
+    const student = students.find(s => s.username === username && s.passwordHash === hash);
+
+    if (!student) {
+      showAlert('login-error', 'Username or password incorrect.'); return;
+    }
+
+    STATE.user = student;
+    localStorage.setItem('ks3cs_session', JSON.stringify({ userId: student.userId }));
+    afterLogin();
+  } catch(e) {
+    showAlert('login-error', 'Could not connect. Please try again.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In →';
+  }
+}
+
+async function doRegister() {
+  hideAlert('reg-error');
+  const username  = document.getElementById('reg-username').value.trim();
+  const password  = document.getElementById('reg-password').value;
+  const yearGroup = document.getElementById('reg-year').value;
+  const classCode = document.getElementById('reg-classcode').value.trim().toUpperCase();
+
+  if (!username || !password || !yearGroup || !classCode) {
+    showAlert('reg-error', 'Please fill in all fields.'); return;
+  }
+  if (password.length < 6) {
+    showAlert('reg-error', 'Password must be at least 6 characters.'); return;
+  }
+  if (!CONFIG.CLASS_CODES.includes(classCode)) {
+    showAlert('reg-error', 'Class code not recognised. Check with your teacher.'); return;
+  }
+
+  try {
+    const hash = await sha256(password);
+    const students = await fetchStudents();
+
+    if (students.find(s => s.username === username)) {
+      showAlert('reg-error', 'That username is already taken. Please choose another.'); return;
+    }
+
+    const newStudent = {
+      userId: uuid(),
+      username,
+      passwordHash: hash,
+      yearGroup,
+      classCode,
+      registeredAt: new Date().toISOString(),
+      scenarios: {},
+    };
+
+    students.push(newStudent);
+    await saveStudents(students);
+
+    STATE.user = newStudent;
+    localStorage.setItem('ks3cs_session', JSON.stringify({ userId: newStudent.userId }));
+    afterLogin();
+  } catch(e) {
+    showAlert('reg-error', 'Registration failed. Please try again.');
+  }
+}
+
+function afterLogin() {
+  document.getElementById('topbar-username').textContent = STATE.user.username;
+  loadAccessibility();
+  renderHub();
+  showView('view-hub');
+}
+
+async function tryAutoLogin() {
+  const saved = localStorage.getItem('ks3cs_session');
+  if (!saved) return false;
+  try {
+    const { userId } = JSON.parse(saved);
+    const students = await fetchStudents();
+    const student = students.find(s => s.userId === userId);
+    if (!student) return false;
+    STATE.user = student;
+    document.getElementById('topbar-username').textContent = student.username;
+    loadAccessibility();
+    return true;
+  } catch { return false; }
+}
+
+function doLogout() {
+  STATE.user = null;
+  STATE.currentScenario = null;
+  localStorage.removeItem('ks3cs_session');
+  showView('view-login');
+}
+
+document.getElementById('btn-logout').addEventListener('click', doLogout);
+
+/* ─── HUB ────────────────────────────────────────────────────────── */
+function renderHub() {
+  const grid = document.getElementById('scenario-grid');
+  const greeting = document.getElementById('hub-greeting');
+  const u = STATE.user;
+
+  greeting.textContent = `WELCOME BACK, ${u.username.toUpperCase()} · ${u.yearGroup} · ${u.classCode}`;
+
+  const applicable = STATE.scenarios.filter(s => s.yearGroups.includes(u.yearGroup));
+
+  if (!applicable.length) {
+    grid.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center;color:var(--text2)">
+      No scenarios available for ${u.yearGroup} yet. Check back soon.</div>`;
+    return;
+  }
+
+  grid.innerHTML = applicable.map(s => {
+    const sd = u.scenarios?.[s.id] || {};
+    const total = s.tasks.length;
+    const done  = Object.values(sd.taskStatuses || {}).filter(x => x === 'complete').length;
+    const pct   = total ? Math.round((done/total)*100) : 0;
+    const status = sd.status || 'not_started';
+
+    const statusBadge = status === 'submitted'
+      ? `<span class="badge badge-green">✓ Submitted</span>`
+      : status === 'in_progress'
+        ? `<span class="badge badge-amber">In Progress</span>`
+        : `<span class="badge badge-blue">Not Started</span>`;
+
+    const yearBadge = s.yearGroups.map(y =>
+      `<span class="badge badge-purple">${y}</span>`).join('');
+
+    const progressHtml = status !== 'not_started' ? `
+      <div class="progress-bar-wrap">
+        <div class="progress-label">
+          <span>Progress</span><span>${done}/${total} tasks</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill ${status==='submitted'?'complete':''}" style="width:${pct}%"></div>
+        </div>
+      </div>` : '';
+
+    return `<div class="scenario-card" onclick="openScenarioIntro('${s.id}')">
+      <div class="sc-meta">${yearBadge}${statusBadge}</div>
+      <div class="sc-title">${s.title}</div>
+      <div class="sc-context">${s.context.substring(0,120)}...</div>
+      ${progressHtml}
+      <div class="sc-footer">
+        <div class="sc-stats">
+          <span>📋 ${total} tasks</span>
+          <span>⏱ ${s.estimatedMinutes}min</span>
+          <span>📅 ${s.estimatedSessions} sessions</span>
+        </div>
+        <span style="font-size:0.8rem;color:var(--accent)">Open →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ─── SCENARIO INTRO ─────────────────────────────────────────────── */
+function openScenarioIntro(scenarioId) {
+  const s = STATE.scenarios.find(x => x.id === scenarioId);
+  if (!s) return;
+  STATE.currentScenario = s;
+
+  document.getElementById('intro-title').textContent = s.title;
+  document.getElementById('intro-context').textContent = s.context;
+  document.getElementById('intro-tasks').textContent   = s.tasks.length;
+  document.getElementById('intro-sessions').textContent = s.estimatedSessions || '—';
+  document.getElementById('intro-mins').textContent    = s.estimatedMinutes;
+
+  // Badges
+  const b = document.getElementById('intro-badges');
+  b.innerHTML = s.yearGroups.map(y => `<span class="badge badge-purple">${y}</span>`).join('') +
+    `<span class="badge badge-blue">${s.tasks.length} tasks</span>`;
+
+  // Subject input
+  const subWrap = document.getElementById('subject-box-wrap');
+  if (s.subjectPrompt) {
+    subWrap.style.display = 'block';
+    document.getElementById('subject-prompt-text').textContent = s.subjectPrompt;
+    document.getElementById('subject-label').textContent = s.subjectFieldLabel || 'My topic:';
+    const saved = STATE.user.scenarios?.[s.id]?.subject || '';
+    document.getElementById('subject-input').value = saved;
+  } else {
+    subWrap.style.display = 'none';
+  }
+
+  // Task list
+  const sd = STATE.user.scenarios?.[s.id] || {};
+  const rows = s.tasks.map((t, i) => {
+    const ts = sd.taskStatuses?.[t.id] || 'not_started';
+    const icon = ts === 'complete' ? '✅' : ts === 'in_progress' ? '🔄' : '⬜';
+    return `<div class="tlp-row">
+      <span class="tlp-num">${String(i+1).padStart(2,'0')}</span>
+      <div class="diff-dot ${t.difficulty}"></div>
+      <span class="tlp-title">${t.title}</span>
+      <span class="tlp-week" style="color:var(--text3)">Wk ${t.week||'—'}</span>
+      <span class="status-icon">${icon}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('tlp-rows').innerHTML = rows;
+
+  showView('view-intro');
+}
+
+function startScenario() {
+  const s = STATE.currentScenario;
+  const sd = STATE.user.scenarios?.[s.id] || {};
+
+  // Save subject if applicable
+  if (s.subjectPrompt) {
+    const subVal = document.getElementById('subject-input').value.trim();
+    if (!subVal) { alert('Please enter your topic before starting.'); return; }
+    if (!STATE.user.scenarios) STATE.user.scenarios = {};
+    if (!STATE.user.scenarios[s.id]) STATE.user.scenarios[s.id] = {};
+    STATE.user.scenarios[s.id].subject = subVal;
+  }
+
+  // Find resume point
+  const lastIdx = sd.lastTaskIndex || 0;
+  STATE.currentTaskIdx = lastIdx;
+
+  if (sd.status === 'submitted') {
+    renderResults(sd);
+    showView('view-results');
+  } else {
+    renderTask(STATE.currentTaskIdx);
+    showView('view-task');
+  }
+}
+
+/* ─── TASK ENGINE ────────────────────────────────────────────────── */
+function renderTask(idx) {
+  const s = STATE.currentScenario;
+  const t = s.tasks[idx];
+  if (!t) return;
+
+  STATE.currentTaskIdx = idx;
+
+  // Counter
+  document.getElementById('task-counter').textContent = `Task ${idx+1} of ${s.tasks.length}`;
+
+  // Pips
+  const sd = STATE.user.scenarios?.[s.id] || {};
+  const pips = s.tasks.map((tk, i) => {
+    const ts = sd.taskStatuses?.[tk.id] || 'not_started';
+    const cls = i === idx ? 'active' : ts === 'complete' ? 'done' : '';
+    return `<div class="task-pip ${cls}" onclick="jumpToTask(${i})" title="Task ${i+1}: ${tk.title}"></div>`;
+  }).join('');
+  document.getElementById('task-pips').innerHTML = pips;
+
+  // Header
+  document.getElementById('task-title').textContent = t.title;
+  document.getElementById('task-marks-badge').textContent = `${t.maxMarks} mark${t.maxMarks!==1?'s':''}`;
+
+  // Badges
+  const diffColour = {foundation:'badge-green', core:'badge-amber', extension:'badge-purple'};
+  const typeLabel  = {multichoice:'Multiple Choice', text:'Written Answer', code:`Code (${t.language||''})`};
+  document.getElementById('task-badges').innerHTML =
+    `<span class="badge ${diffColour[t.difficulty]||'badge-blue'}">${t.difficulty}</span>
+     <span class="badge badge-blue">${typeLabel[t.type]||t.type}</span>`;
+
+  // Question — replace {subject} placeholder
+  const subject = STATE.user.scenarios?.[s.id]?.subject || '';
+  const qText = (t.question||'').replace(/\{subject\}/g, subject || 'your topic');
+  document.getElementById('task-question').textContent = qText;
+
+  // Answer area
+  const savedAnswer = sd.answers?.[t.id] || '';
+  let html = '';
+
+  if (t.type === 'multichoice') {
+    const savedArr = savedAnswer ? JSON.parse(savedAnswer) : [];
+    html = `<div class="mc-options">${(t.options||[]).map((opt,i) => {
+      const checked = savedArr.includes(opt) ? 'checked' : '';
+      const sel     = savedArr.includes(opt) ? 'selected' : '';
+      const inputType = (t.correctAnswers||[]).length > 1 ? 'checkbox' : 'radio';
+      return `<label class="mc-option ${sel}" onclick="selectOption(this,'${inputType}')">
+        <input type="${inputType}" name="mc_${t.id}" value="${escHtml(opt)}" ${checked}> ${escHtml(opt)}
+      </label>`;
+    }).join('')}</div>`;
+  } else if (t.type === 'code') {
+    const starter = savedAnswer || t.starterCode || '';
+    html = `<div class="code-editor-wrap">
+      <div class="code-editor-bar">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="code-lang-dot ${t.language||''}"></div>
+          <span>${(t.language||'code').toUpperCase()}</span>
+        </div>
+        <span>Type your code below</span>
+      </div>
+      <textarea class="code-textarea" id="answer-code" spellcheck="false">${escHtml(starter)}</textarea>
+    </div>`;
+  } else {
+    html = `<textarea id="answer-text" placeholder="Type your answer here..." rows="6">${escHtml(savedAnswer)}</textarea>`;
+  }
+
+  document.getElementById('task-answer-area').innerHTML = html;
+
+  // Nav buttons
+  document.getElementById('btn-prev-task').disabled = (idx === 0);
+  document.getElementById('btn-next-task').textContent =
+    idx === s.tasks.length - 1 ? 'Review & Submit →' : 'Save & Next →';
+
+  setSaveState('saved');
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function selectOption(label, type) {
+  if (type === 'radio') {
+    document.querySelectorAll('.mc-option').forEach(l => {
+      l.classList.remove('selected');
+      l.querySelector('input').checked = false;
+    });
+  }
+  label.classList.toggle('selected');
+  label.querySelector('input').checked = label.classList.contains('selected');
+}
+
+function jumpToTask(idx) { saveCurrentAnswer(false); renderTask(idx); }
+function prevTask()       { saveCurrentAnswer(false); renderTask(STATE.currentTaskIdx - 1); }
+
+async function saveAndNext() {
+  await saveCurrentAnswer(true);
+  const s = STATE.currentScenario;
+  if (STATE.currentTaskIdx >= s.tasks.length - 1) {
+    renderReview();
+    showView('view-review');
+  } else {
+    renderTask(STATE.currentTaskIdx + 1);
+  }
+}
+
+function getCurrentAnswer() {
+  const t = STATE.currentScenario.tasks[STATE.currentTaskIdx];
+  if (t.type === 'multichoice') {
+    const selected = [...document.querySelectorAll('.mc-option.selected')].map(l => {
+      return l.querySelector('input').value;
+    });
+    return JSON.stringify(selected);
+  } else if (t.type === 'code') {
+    return document.getElementById('answer-code')?.value || '';
+  } else {
+    return document.getElementById('answer-text')?.value || '';
+  }
+}
+
+async function saveCurrentAnswer(toJsonBin = true) {
+  const s = STATE.currentScenario;
+  const t = s.tasks[STATE.currentTaskIdx];
+  const answer = getCurrentAnswer();
+
+  if (!STATE.user.scenarios) STATE.user.scenarios = {};
+  if (!STATE.user.scenarios[s.id]) STATE.user.scenarios[s.id] = { status:'in_progress', answers:{}, taskStatuses:{} };
+
+  const sd = STATE.user.scenarios[s.id];
+  sd.answers[t.id] = answer;
+  sd.taskStatuses[t.id] = answer ? 'complete' : 'in_progress';
+  sd.lastTaskIndex = STATE.currentTaskIdx;
+  sd.lastSaved = new Date().toISOString();
+  if (!sd.status || sd.status === 'not_started') sd.status = 'in_progress';
+
+  setSaveState('saving');
+  if (toJsonBin) {
+    clearTimeout(STATE.saveTimer);
+    STATE.saveTimer = setTimeout(async () => {
+      try {
+        const students = await fetchStudents();
+        const idx = students.findIndex(x => x.userId === STATE.user.userId);
+        if (idx > -1) { students[idx] = STATE.user; await saveStudents(students); }
+        setSaveState('saved');
+      } catch { setSaveState('unsaved'); }
+    }, 800);
+  } else {
+    setSaveState('saved');
+  }
+}
+
+function setSaveState(s) {
+  const dot   = document.getElementById('save-dot');
+  const label = document.getElementById('save-label');
+  if (!dot || !label) return;
+  dot.className   = `save-dot ${s==='saving'?'saving':s==='saved'?'saved':''}`;
+  label.textContent = s === 'saving' ? 'saving...' : s === 'saved' ? 'saved ✓' : 'unsaved';
+}
+
+/* ─── REVIEW ─────────────────────────────────────────────────────── */
+function renderReview() {
+  const s  = STATE.currentScenario;
+  const sd = STATE.user.scenarios?.[s.id] || {};
+  const allDone = s.tasks.every(t => sd.taskStatuses?.[t.id] === 'complete');
+
+  document.getElementById('btn-submit').disabled = !allDone;
+  if (!allDone) {
+    document.getElementById('btn-submit').title = 'Complete all tasks before submitting';
+  }
+
+  const html = s.tasks.map((t, i) => {
+    const raw = sd.answers?.[t.id] || '';
+    let preview = '';
+    if (t.type === 'multichoice') {
+      try { preview = JSON.parse(raw).join(', ') || '(no answer)'; } catch { preview = raw; }
+    } else {
+      preview = raw.substring(0,80) + (raw.length > 80 ? '...' : '') || '(no answer)';
+    }
+    const done = sd.taskStatuses?.[t.id] === 'complete';
+    return `<div class="review-item">
+      <span class="review-num">T${String(i+1).padStart(2,'0')}</span>
+      <div class="review-content">
+        <h4>${t.title} <span style="color:${done?'var(--green)':'var(--red)'}">${done?'✓':'✗'}</span></h4>
+        <p>${escHtml(preview)}</p>
+      </div>
+      <span class="review-edit" onclick="jumpFromReview(${i})">Edit</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('review-list').innerHTML = html;
+}
+
+function jumpFromReview(idx) {
+  STATE.currentTaskIdx = idx;
+  renderTask(idx);
+  showView('view-task');
+}
+
+function confirmSubmit() {
+  document.getElementById('modal-confirm').classList.add('open');
+}
+
+/* ─── SUBMISSION & GRADING ───────────────────────────────────────── */
+async function doSubmit() {
+  closeModal();
+  showView('view-grading');
+
+  const s  = STATE.currentScenario;
+  const sd = STATE.user.scenarios?.[s.id] || {};
+  const subject = sd.subject || 'their chosen topic';
+
+  // Build grading prompt
+  const taskBlocks = s.tasks.map(t => {
+    const q = (t.question||'').replace(/\{subject\}/g, subject);
+    const a = sd.answers?.[t.id] || '(no answer provided)';
+    let answer = a;
+    if (t.type === 'multichoice') { try { answer = JSON.parse(a).join(', '); } catch {} }
+    return `TASK ${t.id} — "${t.title}" [${t.maxMarks} marks]\nQuestion: ${q}\nMark Scheme: ${t.markScheme}\nStudent Answer: ${answer}`;
+  }).join('\n\n---\n\n');
+
+  const instructions = (s.gradingInstructions||'').replace(/\{subject\}/g, subject);
+
+  const prompt = `${instructions}\n\nScenario: ${s.title}\nStudent topic: ${subject}\n\n${taskBlocks}\n\nRespond ONLY with valid JSON matching this structure exactly: {"totalScore":0,"maxScore":${s.gradingOutputFormat?.maxScore||0},"overallFeedback":"...","tasks":[{"taskId":"...","score":0,"maxMarks":0,"feedback":"..."}]}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CONFIG.CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: CONFIG.CLAUDE_MODEL,
+        max_tokens: 2000,
+        system: 'You are a KS3 Computer Science teacher. Return ONLY valid JSON, no preamble, no markdown.',
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    const data = await res.json();
+    const raw  = data.content?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(clean);
+
+    // Save result
+    sd.status      = 'submitted';
+    sd.score       = result.totalScore;
+    sd.maxScore    = result.maxScore;
+    sd.aiFeedback  = result.overallFeedback;
+    sd.taskScores  = {};
+    (result.tasks||[]).forEach(rt => { sd.taskScores[rt.taskId] = rt; });
+    sd.submittedAt = new Date().toISOString();
+
+    const students = await fetchStudents();
+    const i = students.findIndex(x => x.userId === STATE.user.userId);
+    if (i > -1) { students[i] = STATE.user; await saveStudents(students); }
+
+    renderResults(sd);
+    showView('view-results');
+
+  } catch(e) {
+    alert('Grading failed. Please try again. Error: ' + e.message);
+    showView('view-review');
+  }
+}
+
+/* ─── RESULTS ────────────────────────────────────────────────────── */
+function renderResults(sd) {
+  const s = STATE.currentScenario || STATE.scenarios.find(x => x.id === Object.keys(STATE.user.scenarios||{}).find(k => STATE.user.scenarios[k] === sd));
+  const score    = sd.score || 0;
+  const maxScore = sd.maxScore || 1;
+  const pct      = Math.round((score/maxScore)*100);
+
+  // Score circle (conic gradient)
+  const circle = document.getElementById('score-circle');
+  circle.style.background = `conic-gradient(var(--accent) ${pct}%, var(--surface2) 0%)`;
+  document.getElementById('score-number').textContent = `${score}/${maxScore}`;
+
+  // Title / badge
+  const rating = pct >= 85 ? {t:'Excellent!', b:'badge-green'} :
+                 pct >= 65 ? {t:'Good work!', b:'badge-blue'} :
+                 pct >= 45 ? {t:'Developing', b:'badge-amber'} :
+                             {t:'Keep going!', b:'badge-red'};
+  document.getElementById('results-title').textContent = rating.t;
+  document.getElementById('results-badges').innerHTML  =
+    `<span class="badge ${rating.b}">${pct}%</span>
+     <span class="badge badge-purple">Submitted</span>`;
+
+  // Feedback
+  document.getElementById('results-feedback').textContent = sd.aiFeedback || 'Feedback unavailable.';
+
+  // Breakdown
+  if (s) {
+    const html = s.tasks.map((t,i) => {
+      const ts = sd.taskScores?.[t.id] || {};
+      return `<div class="rb-item">
+        <span class="rb-num">T${i+1}</span>
+        <div style="flex:1">
+          <div class="rb-title">${t.title}</div>
+          ${ts.feedback ? `<div class="rb-feedback">${escHtml(ts.feedback)}</div>` : ''}
+        </div>
+        <span class="rb-score">${ts.score??'—'}/${t.maxMarks}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('results-breakdown').innerHTML = html;
+  }
+}
+
+/* ─── TEACHER DASHBOARD ──────────────────────────────────────────── */
+function checkPin() {
+  const pin = document.getElementById('pin-input').value;
+  if (pin === CONFIG.TEACHER_PIN) {
+    hideAlert('pin-error');
+    STATE.allStudents = [];
+    showView('view-teacher');
+    loadDashboard();
+  } else {
+    showAlert('pin-error', 'Incorrect PIN.');
+  }
+}
+
+async function loadDashboard() {
+  try {
+    STATE.allStudents = await fetchStudents();
+    populateFilters();
+    renderDashboard(STATE.allStudents);
+  } catch(e) {
+    alert('Could not load student data.');
+  }
+}
+
+function populateFilters() {
+  const classes   = [...new Set(STATE.allStudents.map(s => s.classCode))].sort();
+  const scenarios = [...new Set(STATE.allStudents.flatMap(s => Object.keys(s.scenarios||{})))];
+
+  const cf = document.getElementById('filter-class');
+  cf.innerHTML = '<option value="">All Classes</option>' +
+    classes.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  const sf = document.getElementById('filter-scenario');
+  sf.innerHTML = '<option value="">All Scenarios</option>' +
+    scenarios.map(sid => {
+      const sc = STATE.scenarios.find(x => x.id === sid);
+      return `<option value="${sid}">${sc?.title || sid}</option>`;
+    }).join('');
+}
+
+function applyFilters() {
+  const year = document.getElementById('filter-year').value;
+  const cls  = document.getElementById('filter-class').value;
+  const scen = document.getElementById('filter-scenario').value;
+
+  let filtered = STATE.allStudents;
+  if (year) filtered = filtered.filter(s => s.yearGroup === year);
+  if (cls)  filtered = filtered.filter(s => s.classCode === cls);
+
+  renderDashboard(filtered, scen);
+}
+
+function renderDashboard(students, scenarioFilter = '') {
+  const allScenarioIds = scenarioFilter
+    ? [scenarioFilter]
+    : [...new Set(students.flatMap(s => Object.keys(s.scenarios||{})))];
+
+  // For each scenario, build a sub-table
+  const container = document.getElementById('dashboard-tbody');
+  const thead     = document.getElementById('dashboard-thead');
+
+  if (!allScenarioIds.length || !students.length) {
+    thead.innerHTML = '';
+    container.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--text2);padding:32px">No data yet.</td></tr>`;
+    return;
+  }
+
+  // Use first scenario for column headers (or selected one)
+  const primaryId = allScenarioIds[0];
+  const primarySc = STATE.scenarios.find(x => x.id === primaryId);
+  const tasks     = primarySc?.tasks || [];
+
+  // Calculate stuck columns (< 50% complete)
+  const stuckCols = new Set();
+  tasks.forEach(t => {
+    const total    = students.filter(s => s.scenarios?.[primaryId]).length;
+    const complete = students.filter(s => s.scenarios?.[primaryId]?.taskStatuses?.[t.id] === 'complete').length;
+    if (total > 0 && (complete/total) < 0.5) stuckCols.add(t.id);
+  });
+
+  thead.innerHTML = `<tr>
+    <th>Student</th><th>Year</th><th>Class</th>
+    ${tasks.map(t => `<th class="${stuckCols.has(t.id)?'stuck-col':''}" title="${t.title}">T${tasks.indexOf(t)+1}</th>`).join('')}
+    <th>Score</th><th>Sub?</th>
+  </tr>`;
+
+  const rows = students.map(student => {
+    const sd = student.scenarios?.[primaryId];
+    if (!sd) {
+      return `<tr>
+        <td><strong>${student.username}</strong></td>
+        <td>${student.yearGroup}</td><td>${student.classCode}</td>
+        ${tasks.map(() => `<td class="status-cell">⬜</td>`).join('')}
+        <td>—</td><td style="color:var(--text3)">No</td>
+      </tr>`;
+    }
+
+    const cells = tasks.map(t => {
+      const ts  = sd.taskStatuses?.[t.id] || 'not_started';
+      const icon = ts === 'complete' ? '✅' : ts === 'in_progress' ? '🔄' : '⬜';
+      return `<td class="status-cell ${stuckCols.has(t.id)?'stuck-col':''}">${icon}</td>`;
+    }).join('');
+
+    const submitted = sd.status === 'submitted';
+    return `<tr style="cursor:pointer" onclick="toggleExpand('${student.userId}','${primaryId}')">
+      <td><strong>${student.username}</strong></td>
+      <td>${student.yearGroup}</td><td>${student.classCode}</td>
+      ${cells}
+      <td style="font-family:var(--mono);font-size:0.75rem">${submitted ? `${sd.score}/${sd.maxScore}` : '—'}</td>
+      <td style="color:${submitted?'var(--green)':'var(--text3)'}">${submitted?'Yes':'No'}</td>
+    </tr>
+    <tr class="expand-row" id="expand-${student.userId}">
+      <td colspan="${tasks.length+5}">
+        ${submitted && sd.aiFeedback ? `<strong>AI Feedback:</strong> ${escHtml(sd.aiFeedback)}` : 'Not yet submitted.'}
+      </td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = rows;
+
+  // Average row
+  const submitted = students.filter(s => s.scenarios?.[primaryId]?.status === 'submitted');
+  const avgScore  = submitted.length
+    ? (submitted.reduce((sum,s) => sum + (s.scenarios[primaryId].score||0), 0) / submitted.length).toFixed(1)
+    : '—';
+  const maxScore  = primarySc?.gradingOutputFormat?.maxScore || '?';
+  container.innerHTML += `<tr style="background:var(--surface2);font-style:italic">
+    <td colspan="3" style="font-family:var(--mono);font-size:0.72rem;color:var(--text2)">CLASS AVERAGE</td>
+    ${tasks.map(t => {
+      const total = students.filter(s => s.scenarios?.[primaryId]).length;
+      const done  = students.filter(s => s.scenarios?.[primaryId]?.taskStatuses?.[t.id]==='complete').length;
+      const pct   = total ? Math.round((done/total)*100) : 0;
+      return `<td class="status-cell ${stuckCols.has(t.id)?'stuck-col':''}" style="font-size:0.68rem;font-family:var(--mono);color:var(--text2)">${pct}%</td>`;
+    }).join('')}
+    <td style="font-family:var(--mono);font-size:0.75rem">${avgScore}/${maxScore}</td>
+    <td style="font-family:var(--mono);font-size:0.72rem;color:var(--text2)">${submitted.length}/${students.length}</td>
+  </tr>`;
+}
+
+function toggleExpand(userId, scenarioId) {
+  const row = document.getElementById(`expand-${userId}`);
+  if (row) row.classList.toggle('open');
+}
+
+function exportCSV() {
+  const students = STATE.allStudents;
+  if (!students.length) return;
+
+  const allScenarioIds = [...new Set(students.flatMap(s => Object.keys(s.scenarios||{})))];
+  const rows = [['username','yearGroup','classCode','scenarioId','status','score','maxScore','submitted','aiFeedback']];
+
+  students.forEach(s => {
+    allScenarioIds.forEach(sid => {
+      const sd = s.scenarios?.[sid];
+      if (!sd) return;
+      const sc = STATE.scenarios.find(x => x.id === sid);
+      const taskCols = (sc?.tasks||[]).map(t => sd.taskStatuses?.[t.id] || 'not_started');
+      rows.push([
+        s.username, s.yearGroup, s.classCode, sid,
+        sd.status, sd.score||'', sd.maxScore||'',
+        sd.status==='submitted'?'Yes':'No',
+        `"${(sd.aiFeedback||'').replace(/"/g,"''")}"`,
+        ...taskCols,
+      ]);
+    });
+  });
+
+  const csv  = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'ks3_results.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ─── ACCESSIBILITY ──────────────────────────────────────────────── */
+document.getElementById('btn-superpower').addEventListener('click', () => {
+  STATE.superpower = !STATE.superpower;
+  document.body.classList.toggle('superpower', STATE.superpower);
+  document.getElementById('btn-superpower').style.color = STATE.superpower ? 'var(--amber)' : '';
+  localStorage.setItem('ks3cs_superpower', STATE.superpower ? '1' : '0');
+});
+
+function setOverlay(name) {
+  document.querySelectorAll('.overlay').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.overlay-btn').forEach(el => el.classList.remove('active'));
+  STATE.overlay = name;
+  if (name !== 'none') {
+    document.getElementById(`overlay-${name}`)?.classList.add('active');
+    document.getElementById(`ov-${name}`)?.classList.add('active');
+  } else {
+    document.getElementById('ov-none')?.classList.add('active');
+  }
+  localStorage.setItem('ks3cs_overlay', name);
+}
+
+function loadAccessibility() {
+  const sp = localStorage.getItem('ks3cs_superpower') === '1';
+  STATE.superpower = sp;
+  document.body.classList.toggle('superpower', sp);
+  if (sp) document.getElementById('btn-superpower').style.color = 'var(--amber)';
+
+  const ov = localStorage.getItem('ks3cs_overlay') || 'none';
+  setOverlay(ov);
+}
+
+/* ─── INIT ───────────────────────────────────────────────────────── */
+(async function init() {
+  await loadScenarios();
+
+  const autoLoggedIn = await tryAutoLogin();
+  document.getElementById('global-loading').classList.add('hidden');
+
+  if (autoLoggedIn) {
+    renderHub();
+    showView('view-hub');
+  } else {
+    showView('view-login');
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+{
+  "id": "scenario_y7_binary",
+  "title": "Binary Games Lab",
+  "context": "You are a game developer who has been challenged to create a Scratch game that teaches other students about binary numbers. Over the next 6 weeks you will learn how binary works, practise converting numbers, and then build your own binary-themed game in Scratch — step by step, testing each part as you go.",
+  "yearGroups": ["Y7"],
+  "estimatedMinutes": 360,
+  "estimatedSessions": 6,
+  "subjectPrompt": null,
+  "tasks": [
+    {
+      "id": "task_01",
+      "week": 1,
+      "type": "multichoice",
+      "title": "What is Binary?",
+      "difficulty": "foundation",
+      "maxMarks": 3,
+      "question": "Computers store all data using only two digits: 0 and 1. This is called the BINARY number system (base 2). Each digit is called a BIT.\n\nA normal light switch can only be ON or OFF — binary works the same way.\n\nAnswer these questions:\n\n1. How many different digits does the binary number system use?\n   A) 8   B) 2   C) 10   D) 16\n\n2. What is a single binary digit called?\n   A) A byte   B) A pixel   C) A bit   D) A nibble\n\n3. What does the binary number 1 represent in terms of a switch?\n   A) Broken   B) OFF   C) ON   D) Half on",
+      "options": [
+        "1: A, 2: A, 3: A",
+        "1: B, 2: C, 3: C",
+        "1: C, 2: B, 3: B",
+        "1: B, 2: A, 3: C"
+      ],
+      "correctAnswers": ["1: B, 2: C, 3: C"],
+      "markScheme": "Award 3 marks for the correct combination: 1=B (2 digits), 2=C (bit), 3=C (ON). Award 2 marks if two of the three are correct. Award 1 mark if one is correct. Award 0 for all wrong."
+    },
+    {
+      "id": "task_02",
+      "week": 1,
+      "type": "text",
+      "title": "Counting in Binary",
+      "difficulty": "foundation",
+      "maxMarks": 4,
+      "question": "Binary uses place values that are powers of 2. Here is the 8-bit place value table:\n\n| 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1 |\n\nTo convert binary to denary: add up the place values where there is a 1.\n\nExample: 0 0 0 0 1 1 0 1 = 8 + 4 + 1 = 13\n\nNow convert these binary numbers to denary. Write your four answers, one per line:\n\n1. 0 0 0 0 1 0 1 0\n2. 0 0 0 1 0 0 0 0\n3. 0 0 1 0 0 1 0 1\n4. 0 1 1 0 0 1 0 0",
+      "markScheme": "Correct answers: 1=10, 2=16, 3=37, 4=100. Award 1 mark per correct answer. Accept working shown even if final answer has a minor arithmetic error — award the mark if the method is clearly correct."
+    },
+    {
+      "id": "task_03",
+      "week": 2,
+      "type": "text",
+      "title": "Denary to Binary Conversion",
+      "difficulty": "foundation",
+      "maxMarks": 4,
+      "question": "Now go the other way — denary to binary.\n\nMethod: use the place value table. Starting from the left (128), ask 'does my number fit here?' If yes, write 1 and subtract. If no, write 0 and move right.\n\nPlace values: 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1\n\nConvert these denary numbers to 8-bit binary. Write your four answers, one per line:\n\n1. 25\n2. 72\n3. 143\n4. 200",
+      "markScheme": "Correct answers: 1=00011001, 2=01001000, 3=10001111, 4=11001000. Award 1 mark per correct answer. Accept answers with spaces between bits (e.g. 0001 1001). If a student has the right method but one bit wrong, award the mark and note the error in feedback."
+    },
+    {
+      "id": "task_04",
+      "week": 2,
+      "type": "text",
+      "title": "Binary in Context",
+      "difficulty": "core",
+      "maxMarks": 4,
+      "question": "Binary isn't just numbers — computers use it to store everything.\n\nAnswer these questions in full sentences:\n\n1. A computer stores a black and white image. Each pixel is either black (0) or white (1). An image is 4 pixels wide and 4 pixels tall. How many bits are needed to store the whole image?\n\n2. If 8 bits = 1 byte, how many bytes is that same image?\n\n3. Why do computers use binary instead of our normal base-10 number system? Give ONE reason.\n\n4. The letter 'A' is stored as 01000001 in binary. What is the denary value of 01000001?",
+      "markScheme": "1: 16 bits (4x4=16) — 1 mark. 2: 2 bytes (16÷8=2) — 1 mark. 3: Any valid reason e.g. electronic circuits have two states (on/off), reliable, simple — 1 mark. 4: 65 — 1 mark. Accept clear working even if arithmetic is slightly off."
+    },
+    {
+      "id": "task_05",
+      "week": 3,
+      "type": "text",
+      "title": "Plan Your Scratch Game",
+      "difficulty": "core",
+      "maxMarks": 5,
+      "question": "Time to start your game! Before you build anything, great developers always plan first.\n\nYour game must use binary in some way — it could be a quiz, a puzzle, a catching game, a racing game, anything — as long as binary numbers are part of the gameplay.\n\nWrite your game plan by answering ALL of these:\n\n1. What is the name of your game?\n2. What does the player have to DO? (describe the gameplay in 2-3 sentences)\n3. How does binary feature in the game? (e.g. player converts binary numbers, sprites move by binary values, score shown in binary)\n4. List at least THREE Scratch elements you will need (e.g. sprites, backgrounds, variables, broadcasts, loops)\n5. How will the player WIN or LOSE?",
+      "markScheme": "Award 1 mark each for: (1) a game name given, (2) clear gameplay description that makes sense, (3) a genuine and specific use of binary in the game mechanics, (4) at least 3 valid Scratch elements listed, (5) a clear win/lose condition described. Do not penalise creative or unusual ideas — reward clarity and thought."
+    },
+    {
+      "id": "task_06",
+      "week": 3,
+      "type": "text",
+      "title": "Build: Sprites and Stage",
+      "difficulty": "core",
+      "maxMarks": 4,
+      "question": "Open Scratch (scratch.mit.edu) and start building your game.\n\nThis week focus on setting up your stage and sprites:\n✅ Create or choose your background (stage)\n✅ Add your main sprite(s)\n✅ Make at least one sprite move (use arrow keys OR automatic movement)\n✅ Add your game title as a text element or on the backdrop\n\nTake a SCREENSHOT of your Scratch project showing your stage and at least one sprite moving.\n\nThen answer:\n1. What sprite(s) did you add and why did you choose them?\n2. How did you make the sprite move? (describe the blocks you used)",
+      "markScheme": "Award 1 mark: screenshot submitted showing a Scratch project with a stage and at least one sprite visible. Award 1 mark: student names their sprite(s) with a reason. Award 2 marks: clear description of movement blocks used (e.g. 'I used the when flag clicked block, then a forever loop with move 10 steps and if on edge bounce'). Award 1 mark only if description is vague but shows some understanding. If no screenshot is submitted, cap at 2 marks total."
+    },
+    {
+      "id": "task_07",
+      "week": 4,
+      "type": "text",
+      "title": "Build: Add the Binary Element",
+      "difficulty": "core",
+      "maxMarks": 5,
+      "question": "This is the most important part — adding binary to your game!\n\nThis week, build the part of your game that involves binary numbers. This might be:\n— A variable that stores or shows a binary number\n— A question that asks the player to convert a binary number\n— Sprites that are labelled with binary values\n— A score system that shows points in binary\n— Something else from your plan!\n\nTake a SCREENSHOT showing the binary element working in your project.\n\nThen answer:\n1. Describe exactly how binary is used in your game (be specific)\n2. Which Scratch blocks did you use to make this work?\n3. Did you have to change your original plan at all? If yes, what changed and why?",
+      "markScheme": "Award 2 marks: screenshot shows a genuine binary element in the game (numbers, variables, labels etc). Award 1 mark if screenshot shows the project but binary element is unclear. Award 2 marks: clear description of how binary is specifically used in gameplay mechanics. Award 1 mark: description of Scratch blocks used. Deduct 0 for plan changes — reward honest reflection."
+    },
+    {
+      "id": "task_08",
+      "week": 5,
+      "type": "text",
+      "title": "Build: Score, Lives and Game Logic",
+      "difficulty": "core",
+      "maxMarks": 5,
+      "question": "This week add the game logic that makes it a proper game:\n✅ A score variable that goes up when the player does something right\n✅ A lives or health system OR a timer\n✅ A Game Over screen or message when the player loses\n✅ A win condition or high score\n\nTake a SCREENSHOT showing your score/lives system working.\n\nThen answer:\n1. How does the player score points in your game?\n2. How does the player lose lives or run out of time?\n3. What Scratch blocks did you use for your score variable? (e.g. 'set score to 0', 'change score by 1')",
+      "markScheme": "Award 1 mark: screenshot shows score or lives variable visible on screen. Award 1 mark: clear explanation of how points are scored. Award 1 mark: clear explanation of lose condition (lives/timer). Award 2 marks: accurate description of Scratch variable blocks used (set to 0 on start, change by value on event). Award 1 mark if only one block described correctly."
+    },
+    {
+      "id": "task_09",
+      "week": 6,
+      "type": "text",
+      "title": "Final Build: Complete and Test",
+      "difficulty": "core",
+      "maxMarks": 6,
+      "question": "This is your final build session. Complete your game and test it thoroughly.\n\nChecklist before you submit:\n✅ The game starts when the green flag is clicked\n✅ Binary numbers are used somewhere in the gameplay\n✅ The player can score points\n✅ There is a way to lose (lives or timer)\n✅ There is a Game Over screen\n✅ The game resets properly when played again\n\nTake a FINAL SCREENSHOT of your completed game.\n\nThen write a short test log — for each item in the checklist above, write ONE sentence saying whether it works and how you know.",
+      "markScheme": "Award 1 mark: final screenshot submitted showing a more complete game than earlier screenshots. Award 1 mark per checklist item confirmed with a clear test sentence (max 5 marks from checklist). Total cap: 6 marks. If the screenshot shows a clearly incomplete game (just a blank stage), cap at 2 marks regardless of written answers."
+    },
+    {
+      "id": "task_10",
+      "week": 6,
+      "type": "text",
+      "title": "Evaluation",
+      "difficulty": "extension",
+      "maxMarks": 5,
+      "question": "Every good developer evaluates their finished work.\n\nWrite an evaluation of your binary game by answering ALL of these:\n\n1. Does your game successfully teach or use binary? Explain how.\n2. What is the BEST part of your game and why are you proud of it?\n3. What ONE thing would you improve if you had more time? Be specific.\n4. What was the hardest part of the project and how did you overcome it?\n5. Share your Scratch project link (go to File > Share in Scratch, then paste the URL here). If you cannot share it, explain why.",
+      "markScheme": "Award 1 mark each for: (1) genuine reflection on binary use in the game, (2) specific pride point with a reason, (3) specific and realistic improvement suggestion, (4) honest account of a challenge and how it was addressed, (5) a valid Scratch share URL provided OR a clear explanation of why it could not be shared. Reward honesty and self-awareness throughout."
+    }
+  ],
+  "gradingInstructions": "You are marking Year 7 Computer Science work. The student has been building a binary-themed game in Scratch over 6 weeks. Mark each task against its mark scheme. Be very encouraging — this is a Year 7 student's first programming project. Acknowledge creativity and effort generously. Screenshots are referenced by the student but you cannot see them — award screenshot marks if the student describes what their screenshot shows in sufficient detail. Overall feedback should be 3-5 sentences: celebrate what they built, highlight their strongest understanding of binary, give one clear and gentle improvement target. Return ONLY valid JSON — no preamble, no markdown fences.",
+  "gradingOutputFormat": {
+    "totalScore": "integer",
+    "maxScore": 45,
+    "overallFeedback": "string (3-5 sentences, very encouraging for Year 7)",
+    "tasks": [{ "taskId": "string", "score": "integer", "maxMarks": "integer", "feedback": "string (1-2 sentences)" }]
+  }
+}

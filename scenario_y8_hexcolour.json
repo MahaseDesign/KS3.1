@@ -1,0 +1,135 @@
+{
+  "id": "scenario_y8_hexcolour",
+  "title": "Hex Colour Match",
+  "context": "You are a junior developer at a web design studio. Your team uses hexadecimal colour codes every day to style websites — but none of your colleagues understand how they actually work. Your challenge over the next 6 weeks is to learn hex inside out, then build a colour matching game in Python that tests a player's knowledge of hex colour codes.",
+  "yearGroups": ["Y8"],
+  "estimatedMinutes": 360,
+  "estimatedSessions": 6,
+  "subjectPrompt": null,
+  "tasks": [
+    {
+      "id": "task_01",
+      "week": 1,
+      "type": "multichoice",
+      "title": "What is Hexadecimal?",
+      "difficulty": "foundation",
+      "maxMarks": 3,
+      "question": "Hexadecimal (hex) is a base-16 number system. It uses 16 symbols:\n0 1 2 3 4 5 6 7 8 9 A B C D E F\n\nWhere A=10, B=11, C=12, D=13, E=14, F=15.\n\nComputers use hex because it maps neatly to binary — 4 bits = 1 hex digit.\n\nAnswer these three questions:\n\n1. How many symbols does hexadecimal use?\n   A) 8   B) 10   C) 16   D) 2\n\n2. What is the decimal value of the hex digit F?\n   A) 6   B) 15   C) 16   D) 12\n\n3. How many bits does ONE hex digit represent?\n   A) 8   B) 2   C) 1   D) 4",
+      "options": [
+        "1: C, 2: B, 3: D",
+        "1: B, 2: C, 3: A",
+        "1: C, 2: D, 3: B",
+        "1: A, 2: B, 3: D"
+      ],
+      "correctAnswers": ["1: C, 2: B, 3: D"],
+      "markScheme": "Award 3 marks for all correct (1=C, 2=B, 3=D). Award 2 marks for two correct. Award 1 mark for one correct. Award 0 for all wrong."
+    },
+    {
+      "id": "task_02",
+      "week": 1,
+      "type": "text",
+      "title": "Hex ↔ Denary Conversion",
+      "difficulty": "foundation",
+      "maxMarks": 6,
+      "question": "Hex place values work like denary but in powers of 16:\n... | 256 | 16 | 1 |\n\nTo convert hex to denary:\nExample: 2A = (2 × 16) + (10 × 1) = 32 + 10 = 42\n\nTo convert denary to hex:\nExample: 75 ÷ 16 = 4 remainder 11 → 4B\n\nConvert these — write all six answers, one per line:\n\nHex to denary:\n1. 1F\n2. B4\n3. FF\n\nDenary to hex:\n4. 28\n5. 100\n6. 255",
+      "markScheme": "Correct answers: 1=31, 2=180, 3=255, 4=1C, 5=64, 6=FF. Award 1 mark per correct answer. Accept uppercase or lowercase hex. Award the mark if working is shown and only a minor arithmetic error is present."
+    },
+    {
+      "id": "task_03",
+      "week": 2,
+      "type": "text",
+      "title": "Hex ↔ Binary Conversion",
+      "difficulty": "core",
+      "maxMarks": 6,
+      "question": "The real power of hex: each hex digit maps perfectly to exactly 4 binary bits.\n\nHex → Binary: convert each hex digit to its 4-bit binary equivalent separately.\nExample: A3 → A=1010, 3=0011 → 10100011\n\nBinary → Hex: split binary into groups of 4 from the right, convert each group.\nExample: 11010110 → 1101=D, 0110=6 → D6\n\nConvert these — write all six answers, one per line:\n\nHex to binary:\n1. 5C\n2. FF\n3. 3A\n\nBinary to hex:\n4. 10110100\n5. 00101111\n6. 11111111",
+      "markScheme": "Correct answers: 1=01011100, 2=11111111, 3=00111010, 4=B4, 5=2F, 6=FF. Award 1 mark per correct answer. Accept answers without leading zeros (e.g. 1011100 for question 1). Award the mark if the digit-by-digit method is clearly correct even with one transposition error."
+    },
+    {
+      "id": "task_04",
+      "week": 2,
+      "type": "text",
+      "title": "Hex Colour Codes",
+      "difficulty": "core",
+      "maxMarks": 5,
+      "question": "In web design, colours are written as hex codes like #FF5733.\n\nThe format is: #RRGGBB\n— RR = Red value (00 to FF)\n— GG = Green value (00 to FF)\n— BB = Blue value (00 to FF)\n\nFF in hex = 255 in denary (maximum brightness)\n00 in hex = 0 in denary (no colour)\n\nAnswer these questions:\n\n1. What colour would #FF0000 produce? Explain why.\n2. What would #000000 produce? Explain why.\n3. What would #FFFFFF produce? Explain why.\n4. Convert the hex colour #1A FF 3C into its three denary RGB values (R, G, B).\n5. A designer wants the colour RGB(0, 128, 255). Write this as a hex colour code.",
+      "markScheme": "1: Red — R=FF(max), G=00(none), B=00(none) — 1 mark for correct colour + reason. 2: Black — all channels 0 — 1 mark. 3: White — all channels at maximum — 1 mark. 4: R=26, G=255, B=60 — 1 mark (all three correct; accept 1 error for 0 marks on this part). 5: #0080FF — 1 mark (accept lowercase #0080ff). Partial credit: if method correct but one hex digit wrong, award the mark."
+    },
+    {
+      "id": "task_05",
+      "week": 3,
+      "type": "code",
+      "language": "python",
+      "title": "Python Foundations: Variables and Input",
+      "difficulty": "foundation",
+      "maxMarks": 5,
+      "question": "Open your online Python IDE (Trinket or Replit) and create a new Python file.\n\nWrite a Python program that:\n✅ Asks the player to enter their name using input()\n✅ Stores it in a variable called player_name\n✅ Prints a welcome message using their name\n✅ Asks the player to enter a hex colour code (e.g. FF5733)\n✅ Prints back: 'You entered the colour: #' + their hex code\n\nExample output:\nEnter your name: Joe\nWelcome to Hex Colour Match, Joe!\nEnter a hex colour code: FF0000\nYou entered the colour: #FF0000\n\nPaste your complete code below.",
+      "starterCode": "# Hex Colour Match - Getting Started\n# Week 3: Variables and Input\n\n# Step 1: Ask for the player's name\n\n# Step 2: Welcome the player\n\n# Step 3: Ask for a hex colour code\n\n# Step 4: Print the colour back\n",
+      "markScheme": "Award 1 mark: input() used to get player name. Award 1 mark: name stored in a variable. Award 1 mark: welcome message printed using the variable (not just hardcoded). Award 1 mark: input() used to get a hex code. Award 1 mark: hex code printed back with '#' prepended. Syntax errors that clearly show the right intent should still score marks — focus on understanding over perfect syntax."
+    },
+    {
+      "id": "task_06",
+      "week": 4,
+      "type": "code",
+      "language": "python",
+      "title": "Build: Colour Guessing Logic",
+      "difficulty": "core",
+      "maxMarks": 7,
+      "question": "Now build the core of your colour match game.\n\nCreate a program that:\n✅ Stores a list of at least 5 hex colour codes and their colour names\n   e.g. 'FF0000' = 'Red', '00FF00' = 'Green', '0000FF' = 'Blue'\n✅ Randomly picks one hex code from the list using random.choice()\n✅ Shows the player the hex code and asks them to guess the colour name\n✅ Checks if their answer is correct (case-insensitive)\n✅ Prints 'Correct!' or 'Wrong! It was [colour name]'\n\nTake a SCREENSHOT of your program running with a correct guess and a wrong guess shown.\n\nPaste your code below the screenshot description.",
+      "starterCode": "import random\n\n# Dictionary of hex codes and colour names\ncolours = {\n    'FF0000': 'Red',\n    '00FF00': 'Green',\n    '0000FF': 'Blue',\n    # Add more colours here!\n}\n\n# Pick a random hex code\n\n# Ask the player to guess\n\n# Check if correct\n",
+      "markScheme": "Award 1 mark: dictionary or list of at least 5 hex/colour pairs. Award 1 mark: random.choice() or equivalent used to select a colour. Award 1 mark: hex code displayed to player. Award 2 marks: input taken, compared to correct answer, correct/wrong message shown (1 mark if comparison works but case-sensitivity not handled). Award 1 mark: screenshot described showing a correct guess. Award 1 mark: screenshot described showing a wrong guess with the correct answer revealed."
+    },
+    {
+      "id": "task_07",
+      "week": 4,
+      "type": "code",
+      "language": "python",
+      "title": "Build: Score and Rounds",
+      "difficulty": "core",
+      "maxMarks": 6,
+      "question": "Extend your game to add multiple rounds and a score.\n\nAdd to your existing program:\n✅ A score variable starting at 0\n✅ A loop that runs the game for 5 rounds\n✅ Score increases by 1 for each correct answer\n✅ At the end, display the final score out of 5\n✅ A message that changes based on score:\n   — 5/5: 'Hex Master!'\n   — 3-4/5: 'Great work!'\n   — Below 3: 'Keep practising!'\n\nTake a SCREENSHOT showing your game running through multiple rounds.\n\nPaste your updated code below.",
+      "starterCode": "import random\n\ncolours = {\n    'FF0000': 'Red',\n    '00FF00': 'Green', \n    '0000FF': 'Blue',\n    'FFFF00': 'Yellow',\n    'FF00FF': 'Magenta',\n    'FFFFFF': 'White',\n    '000000': 'Black'\n}\n\nscore = 0\nrounds = 5\n\n# Add your loop here\n\n# Print final score and message\n",
+      "markScheme": "Award 1 mark: score variable initialised to 0. Award 1 mark: loop runs for correct number of rounds (for loop with range or while loop). Award 1 mark: score incremented correctly on right answer. Award 1 mark: final score displayed as X out of 5. Award 2 marks: conditional messages based on score bands (both conditions correct = 2, one correct = 1). Screenshot: if described, award marks as above — do not penalise for missing screenshot if code is complete and correct."
+    },
+    {
+      "id": "task_08",
+      "week": 5,
+      "type": "code",
+      "language": "python",
+      "title": "Build: Hex Conversion Challenge",
+      "difficulty": "core",
+      "maxMarks": 7,
+      "question": "Add a BONUS round to your game that tests the player's hex conversion skills.\n\nAfter the 5 colour rounds, add:\n✅ A bonus round that shows a hex code (e.g. 'FF')\n✅ Asks the player to type the denary value\n✅ Checks if the answer is correct\n✅ Awards 2 bonus points for a correct answer\n✅ Shows the correct answer if they get it wrong, with an explanation\n\nHint: you can use int('FF', 16) in Python to convert hex to denary!\n\nTake a SCREENSHOT showing the bonus round working.\n\nPaste your complete updated code.",
+      "starterCode": "# Hint: Python can convert hex to denary for you!\n# int('FF', 16) returns 255\n# int('1A', 16) returns 26\n\n# Pick a random hex value for the bonus round\nimport random\nhex_values = ['FF', '1A', 'B4', '3C', '64', '0F', 'A0']\n\n# Your bonus round code here\n",
+      "markScheme": "Award 1 mark: a hex value selected for the bonus round. Award 1 mark: player asked for denary value. Award 1 mark: int(hex, 16) or equivalent conversion used to check answer. Award 1 mark: correct answer checked against player input. Award 1 mark: 2 bonus points awarded correctly. Award 1 mark: wrong answer shows correct denary value with explanation. Award 1 mark: screenshot described showing bonus round interaction. If student has not used int(hex,16) but has manually checked the answer correctly, still award the conversion mark."
+    },
+    {
+      "id": "task_09",
+      "week": 6,
+      "type": "code",
+      "language": "python",
+      "title": "Final Build: Polish and Complete",
+      "difficulty": "core",
+      "maxMarks": 6,
+      "question": "This is your final build session. Complete and polish your Hex Colour Match game.\n\nFinal checklist:\n✅ Game starts with a welcome message and player name\n✅ 5 colour rounds with correct/wrong feedback\n✅ Score tracked and shown at the end\n✅ Final score message (Hex Master / Great Work / Keep Practising)\n✅ Bonus hex conversion round\n✅ Code is commented — at least 5 comments explaining what sections do\n\nTake a FINAL SCREENSHOT of your complete game running from start to finish.\n\nPaste your final complete code below.\n\nAlso paste your Trinket or Replit share link so your teacher can run it.",
+      "starterCode": "",
+      "markScheme": "Award 1 mark: welcome message with player name present in code. Award 1 mark: 5 rounds with scoring present and working. Award 1 mark: final score message with correct conditions. Award 1 mark: bonus round present. Award 1 mark: at least 5 meaningful comments in the code (not just # comment here). Award 1 mark: share link provided OR clear explanation of why it could not be shared. Screenshot: if final screenshot described as showing full game run, this confirms the above — use it to validate marks."
+    },
+    {
+      "id": "task_10",
+      "week": 6,
+      "type": "text",
+      "title": "Evaluation",
+      "difficulty": "extension",
+      "maxMarks": 5,
+      "question": "Write an evaluation of your Hex Colour Match game.\n\nAnswer ALL of these:\n\n1. How does your game help a player learn about hexadecimal? Give a specific example from your game.\n\n2. What is the most complex part of your Python code? Explain how it works in plain English.\n\n3. If you were to add one more feature to improve the game, what would it be and why?\n\n4. What was the trickiest Python concept to understand during this project?\n\n5. A friend says 'hex is just letters and numbers, it has nothing to do with computers.' Write 2-3 sentences explaining why they are wrong.",
+      "markScheme": "Award 1 mark each for: (1) specific example of hex learning in the game, (2) accurate plain-English explanation of a complex code section, (3) realistic and specific feature suggestion with reasoning, (4) honest reflection on a Python challenge, (5) correct explanation mentioning: hex maps to binary, used in colour codes/memory addresses/computer data storage. Reward quality of explanation over length."
+    }
+  ],
+  "gradingInstructions": "You are marking Year 8 Computer Science work. The student has been building a Hex Colour Match game in Python over 6 weeks using an online IDE (Trinket or Replit). Mark each task against its mark scheme. Be encouraging and constructive. For code tasks: focus on whether the logic is correct and the student demonstrates understanding — do not penalise for minor syntax errors if the intent is clear. Screenshots cannot be viewed directly — award screenshot marks if the student describes what the screenshot shows. Overall feedback: 3-5 sentences celebrating their Python progress, noting their strongest hex understanding, and giving one specific improvement target. Return ONLY valid JSON — no preamble, no markdown fences.",
+  "gradingOutputFormat": {
+    "totalScore": "integer",
+    "maxScore": 56,
+    "overallFeedback": "string (3-5 sentences, encouraging for Year 8)",
+    "tasks": [{ "taskId": "string", "score": "integer", "maxMarks": "integer", "feedback": "string (1-2 sentences)" }]
+  }
+}
